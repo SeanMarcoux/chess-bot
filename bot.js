@@ -66,6 +66,9 @@ function reactToCommands(msg, message)
         player1 = msg.author.id;
         newGame(msg, msg.author.username);
     }
+    else if(message.startsWith("&move ")) {
+        move(msg);
+    }
     else {
         msg.reply("I didn't understand that command. If it was meant for another bot, my bad!");
     }
@@ -74,7 +77,8 @@ function reactToCommands(msg, message)
 function help(msg) {
     msg.reply("The following commands are available:\n"
         + "*&help*: Displays this message\n"
-        + "*&newgame*: I'll start a game of connect 4 with you!");
+        + "*&newgame*: I'll start a game of connect 4 with you!\n"
+        + "*&move (current space) (target space)*: Move a piece from the current space to the target space (ex: &move A1 B2)");
 }
 
 function newGame(msg, p1) {
@@ -86,10 +90,10 @@ function newGame(msg, p1) {
 function resetBoard() {
     var row1 = [blackRook, blackKnight, blackBishop, blackQueen, blackKing, blackBishop, blackKnight, blackRook];
     var row2 = [blackPawn, blackPawn, blackPawn, blackPawn, blackPawn, blackPawn, blackPawn, blackPawn];
-    var row3 = [whiteSpace, blackSpace, whiteSpace, blackSpace, whiteSpace, blackSpace, whiteSpace, blackSpace];
-    var row4 = [blackSpace, whiteSpace, blackSpace, whiteSpace, blackSpace, whiteSpace, blackSpace, whiteSpace];
-    var row5 = [whiteSpace, blackSpace, whiteSpace, blackSpace, whiteSpace, blackSpace, whiteSpace, blackSpace];
-    var row6 = [blackSpace, whiteSpace, blackSpace, whiteSpace, blackSpace, whiteSpace, blackSpace, whiteSpace];
+    var row3 = [" ", " ", " ", " ", " ", " ", " ", " "];
+    var row4 = [" ", " ", " ", " ", " ", " ", " ", " "];
+    var row5 = [" ", " ", " ", " ", " ", " ", " ", " "];
+    var row6 = [" ", " ", " ", " ", " ", " ", " ", " "];
     var row7 = [whitePawn, whitePawn, whitePawn, whitePawn, whitePawn, whitePawn, whitePawn, whitePawn];
     var row8 = [whiteRook, whiteKnight, whiteBishop, whiteQueen, whiteKing, whiteBishop, whiteKnight, whiteRook];
     board = [row1, row2, row3, row4, row5, row6, row7, row8]
@@ -99,17 +103,22 @@ function displayBoard(msg) {
     var boardMessage = "";
     for(var i = 0; i < board.length; i++) {
         for(var j = 0; j < board[i].length; j++) {
-            boardMessage += board[i][j] + " ";
+            if(board[i][j] == " " && (i+j)%2==0)
+            {
+                boardMessage += whiteSpace + " ";
+            }
+            else if(board[i][j] == " ")
+            {
+                boardMessage += blackSpace + " ";
+            }
+            else
+            {
+                boardMessage += board[i][j] + " ";
+            }
         }
         boardMessage += "\n";
     }
-    if(useDMs)
-    {
-        dmUser(nextPlayer, boardMessage);
-        dmUser(getNextPlayer(), boardMessage);
-    }
-    else
-        msg.channel.send(boardMessage);
+    msg.channel.send(boardMessage);
 }
 
 var key = fs.readFileSync("key.txt");
