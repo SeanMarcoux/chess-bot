@@ -144,6 +144,11 @@ function move(msg, message) {
         return;
     }
     
+    console.log(startRow);
+    console.log(startCol);
+    console.log(endRow);
+    console.log(endCol);
+    
     switch(board[startRow][startCol]) {
         case ' ':
             msg.reply("There is no piece at that space!");
@@ -174,34 +179,43 @@ function move(msg, message) {
     }
 }
 
+function movePiece(msg, startCol, startRow, endCol, endRow) {
+    board[endRow][endCol] = board[startRow][startCol];
+    board[startRow][startCol] = " ";
+    displayBoard(msg);
+}
+
 function movePawn(msg, startCol, startRow, endCol, endRow) {
-    //Normal straight movement
-    if(startCol == endCol && endRow == startRow-1 && isBlank(board[endRow][endCol])) {
+    if(isValidPawnMove(startCol, startRow, endCol, endRow)) {
         movePiece(msg, startCol, startRow, endCol, endRow);
     }
-    //Starting straight movement
-    else if(startRow == 6 && startCol == endCol && endRow == 4 && isBlank(board[endRow][endCol]))
-    {
-        movePiece(msg, startCol, startRow, endCol, endRow);
-    }
-    //Diagonal right capture
-    else if(endRow == startRow-1 && endCol == startCol+1 && isBlackCapturablePiece(board[endRow][endCol])) {
-        movePiece(msg, startCol, startRow, endCol, endRow);
-    }
-    //Diagonal left capture
-    else if(endRow == startRow-1 && endCol == startCol-1 && isBlackCapturablePiece(board[endRow][endCol])) {
-        movePiece(msg, startCol, startRow, endCol, endRow);
-    }
-    //TODO: Add en passant capability
     else {
         msg.reply("Invalid pawn move!");
     }
 }
 
-function movePiece(msg, startCol, startRow, endCol, endRow) {
-    board[endRow][endCol] = board[startRow][startCol];
-    board[startRow][startCol] = " ";
-    displayBoard(msg);
+function isValidPawnMove(startCol, startRow, endCol, endRow) {
+    //Normal straight movement
+    if(startCol == endCol && endRow == startRow-1 && isBlank(board[endRow][endCol])) {
+        return true;
+    }
+    //Starting straight movement
+    else if(startRow == 6 && startCol == endCol && endRow == 4 && isBlank(board[endRow][endCol]))
+    {
+        return true;
+    }
+    //Diagonal right capture
+    else if(endRow == startRow-1 && endCol == startCol+1 && isBlackCapturablePiece(board[endRow][endCol])) {
+        return true;
+    }
+    //Diagonal left capture
+    else if(endRow == startRow-1 && endCol == startCol-1 && isBlackCapturablePiece(board[endRow][endCol])) {
+        return true;
+    }
+    //TODO: Add en passant capability
+    else {
+        return false;
+    }
 }
 
 function moveRook(msg, startCol, startRow, endCol, endRow) {
@@ -209,7 +223,53 @@ function moveRook(msg, startCol, startRow, endCol, endRow) {
 }
 
 function moveKnight(msg, startCol, startRow, endCol, endRow) {
-    console.log("Knight");
+    if(isValidKnightMove(startCol, startRow, endCol, endRow)) {
+        movePiece(msg, startCol, startRow, endCol, endRow);
+    }
+    else {
+        msg.reply("Invalid knight move!");
+    }
+}
+
+function isValidKnightMove(startCol, startRow, endCol, endRow) {
+    if(!isBlank(board[endRow][endCol]) && !isBlackCapturablePiece(board[endRow][endCol])) {
+        return false;
+    }
+    //Up 1 and right 2
+    else if(endRow == startRow-1 && endCol == startCol+2) {
+        return true;
+    }
+    //Up 1 and left 2
+    else if(endRow == startRow-1 && endCol == startCol-2) {
+        return true;
+    }
+    //Up 2 and right 1
+    else if(endRow == startRow-2 && endCol == startCol+1) {
+        return true;
+    }
+    //Up 2 and left 1
+    else if(endRow == startRow-2 && endCol == startCol-1) {
+        return true;
+    }
+    //Down 1 and right 2
+    else if(endRow == startRow+1 && endCol == startCol+2) {
+        return true;
+    }
+    //Down 1 and left 2
+    else if(endRow == startRow+1 && endCol == startCol-2) {
+        return true;
+    }
+    //Down 2 and right 1
+    else if(endRow == startRow+2 && endCol == startCol+1) {
+        return true;
+    }
+    //Down 2 and left 1
+    else if(endRow == startRow+2 && endCol == startCol-1) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 function moveBishop(msg, startCol, startRow, endCol, endRow) {
