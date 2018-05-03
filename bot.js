@@ -67,7 +67,7 @@ function reactToCommands(msg, message)
         newGame(msg, msg.author.username);
     }
     else if(message.startsWith("&move ")) {
-        move(msg);
+        move(msg, message);
     }
     else {
         msg.reply("I didn't understand that command. If it was meant for another bot, my bad!");
@@ -103,6 +103,7 @@ function displayBoard(msg) {
     var boardMessage = "";
     for(var i = 0; i < board.length; i++) {
         for(var j = 0; j < board[i].length; j++) {
+            //Indices that add up to an even number are white spaces
             if(board[i][j] == " " && (i+j)%2==0)
             {
                 boardMessage += whiteSpace + " ";
@@ -119,6 +120,96 @@ function displayBoard(msg) {
         boardMessage += "\n";
     }
     msg.channel.send(boardMessage);
+}
+
+function move(msg, message) {
+    var move = getStringAfterSpace(message);
+    var startSpace = move.split(" ")[0];
+    var endSpace = move.split(" ")[1];
+    var startCol = getColumnNum(startSpace.charAt(0));
+    var startRow = 8-parseInt(startSpace.charAt(1));
+    var endCol = getColumnNum(endSpace.charAt(0));
+    var endRow = 8-parseInt(endSpace.charAt(1));
+    
+    switch(board[startRow][startCol]) {
+        case ' ':
+            msg.reply("There is no piece at that space!");
+            return;
+        case whitePawn:
+        case blackPawn:
+            movePawn(msg, startCol, startRow, endCol, endRow);
+            break;
+        case whiteRook:
+        case blackRook:
+            moveRook(msg, startCol, startRow, endCol, endRow);
+            break;
+        case whiteKnight:
+        case blackKnight:
+            moveKnight(msg, startCol, startRow, endCol, endRow);
+            break;
+        case whiteBishop:
+        case blackBishop:
+            moveBishop(msg, startCol, startRow, endCol, endRow);
+            break;
+        case whiteQueen:
+        case blackQueen:
+            moveQueen(msg, startCol, startRow, endCol, endRow);
+            break;
+        case whiteKing:
+        case blackKing:
+            moveKing(msg, startCol, startRow, endCol, endRow);
+    }
+}
+
+function movePawn(msg, startCol, startRow, endCol, endRow) {
+    console.log("Pawn");
+}
+
+function moveRook(msg, startCol, startRow, endCol, endRow) {
+    console.log("Rook");
+}
+
+function moveKnight(msg, startCol, startRow, endCol, endRow) {
+    console.log("Knight");
+}
+
+function moveBishop(msg, startCol, startRow, endCol, endRow) {
+    console.log("Bishop");
+}
+
+function moveQueen(msg, startCol, startRow, endCol, endRow) {
+    console.log("Queen");
+}
+
+function moveKing(msg, startCol, startRow, endCol, endRow) {
+    console.log("King");
+}
+
+function getColumnNum(colChar) {
+    switch(colChar) {
+        case 'a':
+            return 0;
+        case 'b':
+            return 1;
+        case 'c':
+            return 2;
+        case 'd':
+            return 3;
+        case 'e':
+            return 4;
+        case 'f':
+            return 5;
+        case 'g':
+            return 6;
+        case 'h':
+            return 7;
+    }
+}
+
+function getStringAfterSpace(string) {
+    if(string.indexOf(" ") > 0)
+        return string.slice(string.indexOf(" ")+1, string.length);
+    return null;
 }
 
 var key = fs.readFileSync("key.txt");
