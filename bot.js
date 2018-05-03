@@ -82,7 +82,7 @@ function help(msg) {
 }
 
 function newGame(msg, p1) {
-    msg.channel.send("New game started by + " + p1 + "!");
+    msg.channel.send("New game started by " + p1 + "!");
     resetBoard();
     displayBoard(msg);
 }
@@ -152,7 +152,7 @@ function move(msg, message) {
     switch(board[startRow][startCol]) {
         case ' ':
             msg.reply("There is no piece at that space!");
-            return;
+            break;
         case whitePawn:
         case blackPawn:
             movePawn(msg, startCol, startRow, endCol, endRow);
@@ -219,7 +219,59 @@ function isValidPawnMove(startCol, startRow, endCol, endRow) {
 }
 
 function moveRook(msg, startCol, startRow, endCol, endRow) {
-    console.log("Rook");
+    if(isValidRookMove(startCol, startRow, endCol, endRow)) {
+        movePiece(msg, startCol, startRow, endCol, endRow);
+    }
+    else {
+        msg.reply("Invalid rook move!");
+    }
+}
+
+function isValidRookMove(startCol, startRow, endCol, endRow) {
+    if(!isBlank(board[endRow][endCol]) && !isBlackCapturablePiece(board[endRow][endCol])) {
+        return false;
+    }
+    //Moving up or down
+    else if(startCol == endCol && startRow != endRow) {
+        return isRowFree(startCol, startRow, endRow);
+    }
+    //Left or right
+    else if(startCol != endCol && startRow == endRow) {
+        return isColumnFree(startRow, startCol, endCol);
+    }
+    else {
+        return false;
+    }
+}
+
+function isRowFree(col, startRow, endRow) {
+    if(startRow > endRow)
+    {
+        var temp = startRow;
+        startRow = endRow;
+        endRow = temp;
+    }
+    for(var i = startRow+1; i < endRow; i++) {
+        if(board[i][col] != " ") {
+            return false;
+        }
+    }
+    return true;
+}
+
+function isColumnFree(row, startCol, endCol) {
+    if(startCol > endCol)
+    {
+        var temp = startCol;
+        startCol = endCol;
+        endCol = temp;
+    }
+    for(var i = startCol+1; i < endCol; i++) {
+        if(board[row][i] != " ") {
+            return false;
+        }
+    }
+    return true;
 }
 
 function moveKnight(msg, startCol, startRow, endCol, endRow) {
