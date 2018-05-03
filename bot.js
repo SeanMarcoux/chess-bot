@@ -5,17 +5,17 @@ const fs = require('fs');
 
 var board;
 var whiteKing = "\uD83D\uDC51"//"\u2654";
-var blackKing = "\uD83D\uDC51"//"\u265A";
+var blackKing = "\uD83D\uDD1D"//"\u265A";
 var whiteQueen = "\uD83C\uDDF6"//"\u2655";
-var blackQueen = "\uD83C\uDDF6"//"\u265B";
+var blackQueen = "\u21A9"//"\u265B";
 var whiteRook = "\uD83C\uDDF7"//"\u2656";
-var blackRook = "\uD83C\uDDF7"//"\u265C";
+var blackRook = "\u2194"//"\u265C";
 var whiteBishop = "\uD83C\uDDE7"//"\u2657";
-var blackBishop = "\uD83C\uDDE7"//"\u265D";
+var blackBishop = "\u2198"//"\u265D";
 var whiteKnight = "\uD83C\uDDF0"//"\u2658";
-var blackKnight = "\uD83C\uDDF0"//"\u265E";
+var blackKnight = "\u2935"//"\u265E";
 var whitePawn = "\uD83C\uDDF5"//"\u2659";
-var blackPawn = "\uD83C\uDDF5"//"\u265F";
+var blackPawn = "\u2B07"//"\u265F";
 var blackSpace = "\u2B1B";
 var whiteSpace = "\u2B1C";
 
