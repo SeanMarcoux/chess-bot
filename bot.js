@@ -374,7 +374,16 @@ function isDiagonalFree(startCol, startRow, endCol, endRow) {
 }
 
 function moveQueen(msg, startCol, startRow, endCol, endRow) {
-    console.log("Queen");
+    if(isValidQueenMove(startCol, startRow, endCol, endRow)) {
+        movePiece(msg, startCol, startRow, endCol, endRow);
+    }
+    else {
+        msg.reply("Invalid queen move!");
+    }
+}
+
+function isValidQueenMove(startCol, startRow, endCol, endRow) {
+    return isValidBishopMove(startCol, startRow, endCol, endRow) || isValidRookMove(startCol, startRow, endCol, endRow);
 }
 
 function moveKing(msg, startCol, startRow, endCol, endRow) {
