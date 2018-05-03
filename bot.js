@@ -325,7 +325,52 @@ function isValidKnightMove(startCol, startRow, endCol, endRow) {
 }
 
 function moveBishop(msg, startCol, startRow, endCol, endRow) {
-    console.log("Bishop");
+    if(isValidBishopMove(startCol, startRow, endCol, endRow)) {
+        movePiece(msg, startCol, startRow, endCol, endRow);
+    }
+    else {
+        msg.reply("Invalid bishop move!");
+    }
+}
+
+function isValidBishopMove(startCol, startRow, endCol, endRow) {
+    if(!isBlank(board[endRow][endCol]) && !isBlackCapturablePiece(board[endRow][endCol])) {
+        return false;
+    }
+    //To move diagonally, it must be moving the same num of rows as columns
+    else if(Math.abs(endCol-startCol) == Math.abs(endRow-startRow))
+    {
+        return isDiagonalFree(startCol, startRow, endCol, endRow);
+    }
+    else
+    {
+        return false;
+    }
+}
+
+function isDiagonalFree(startCol, startRow, endCol, endRow) {
+    if(startRow < endRow)
+    {
+        var temp = startRow;
+        startRow = endRow;
+        endRow = temp;
+        temp = startCol;
+        startCol = endCol;
+        endCol = temp;
+    }
+    if(startCol < endCol) {
+        for(var i = 1; i < Math.abs(endCol-startCol); i++) {
+            if(board[startRow-i][startCol+i] != " ")
+                return false;
+        }
+    }
+    else {
+        for(var i = 1; i < Math.abs(endCol-startCol); i++) {
+            if(board[startRow-i][startCol-i] != " ")
+                return false;
+        }
+    }
+    return true;
 }
 
 function moveQueen(msg, startCol, startRow, endCol, endRow) {
