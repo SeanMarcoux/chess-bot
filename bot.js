@@ -102,6 +102,7 @@ function resetBoard() {
 function displayBoard(msg) {
     var boardMessage = "";
     for(var i = 0; i < board.length; i++) {
+        boardMessage += 8-i;
         for(var j = 0; j < board[i].length; j++) {
             //Indices that add up to an even number are white spaces
             if(board[i][j] == " " && (i+j)%2==0)
@@ -119,6 +120,7 @@ function displayBoard(msg) {
         }
         boardMessage += "\n";
     }
+    boardMessage += "\n  \uD83C\uDDE6 \uD83C\uDDE7 \uD83C\uDDE8 \uD83C\uDDE9 \uD83C\uDDEA \uD83C\uDDEB \uD83C\uDDEC \uD83C\uDDED"
     msg.channel.send(boardMessage);
 }
 
@@ -130,6 +132,17 @@ function move(msg, message) {
     var startRow = 8-parseInt(startSpace.charAt(1));
     var endCol = getColumnNum(endSpace.charAt(0));
     var endRow = 8-parseInt(endSpace.charAt(1));
+    
+    if(startCol < 0 || startCol > 7 || startRow < 0 || startRow > 7)
+    {
+        msg.reply("Start space is off of the board!");
+        return;
+    }
+    if(endCol < 0 || endCol > 7 || endRow < 0 || endRow > 7)
+    {
+        msg.reply("End space is off of the board!");
+        return;
+    }
     
     switch(board[startRow][startCol]) {
         case ' ':
@@ -162,7 +175,33 @@ function move(msg, message) {
 }
 
 function movePawn(msg, startCol, startRow, endCol, endRow) {
-    console.log("Pawn");
+    //Normal straight movement
+    if(startCol == endCol && endRow == startRow-1 && isBlank(board[endRow][endCol])) {
+        movePiece(msg, startCol, startRow, endCol, endRow);
+    }
+    //Starting straight movement
+    else if(startRow == 6 && startCol == endCol && endRow == 4 && isBlank(board[endRow][endCol]))
+    {
+        movePiece(msg, startCol, startRow, endCol, endRow);
+    }
+    //Diagonal right capture
+    else if(endRow == startRow-1 && endCol == startCol+1 && isBlackCapturablePiece(board[endRow][endCol])) {
+        movePiece(msg, startCol, startRow, endCol, endRow);
+    }
+    //Diagonal left capture
+    else if(endRow == startRow-1 && endCol == startCol-1 && isBlackCapturablePiece(board[endRow][endCol])) {
+        movePiece(msg, startCol, startRow, endCol, endRow);
+    }
+    //TODO: Add en passant capability
+    else {
+        msg.reply("Invalid pawn move!");
+    }
+}
+
+function movePiece(msg, startCol, startRow, endCol, endRow) {
+    board[endRow][endCol] = board[startRow][startCol];
+    board[startRow][startCol] = " ";
+    displayBoard(msg);
 }
 
 function moveRook(msg, startCol, startRow, endCol, endRow) {
@@ -183,6 +222,14 @@ function moveQueen(msg, startCol, startRow, endCol, endRow) {
 
 function moveKing(msg, startCol, startRow, endCol, endRow) {
     console.log("King");
+}
+
+function isBlank(space) {
+    return space == " ";
+}
+
+function isBlackCapturablePiece(space) {
+    return (space == blackPawn || space == blackRook || space == blackKnight || space == blackBishop || space == blackQueen);
 }
 
 function getColumnNum(colChar) {
