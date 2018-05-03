@@ -144,38 +144,45 @@ function move(msg, message) {
         return;
     }
     
-    console.log(startRow);
-    console.log(startCol);
-    console.log(endRow);
-    console.log(endCol);
-    
     switch(board[startRow][startCol]) {
         case ' ':
             msg.reply("There is no piece at that space!");
             break;
         case whitePawn:
+            movePawn(msg, startCol, startRow, endCol, endRow, true);
+            break;
         case blackPawn:
-            movePawn(msg, startCol, startRow, endCol, endRow);
+            movePawn(msg, startCol, startRow, endCol, endRow, false);
             break;
         case whiteRook:
+            moveRook(msg, startCol, startRow, endCol, endRow, true);
+            break;
         case blackRook:
-            moveRook(msg, startCol, startRow, endCol, endRow);
+            moveRook(msg, startCol, startRow, endCol, endRow, false);
             break;
         case whiteKnight:
+            moveKnight(msg, startCol, startRow, endCol, endRow, true);
+            break;
         case blackKnight:
-            moveKnight(msg, startCol, startRow, endCol, endRow);
+            moveKnight(msg, startCol, startRow, endCol, endRow, false);
             break;
         case whiteBishop:
+            moveBishop(msg, startCol, startRow, endCol, endRow, true);
+            break;
         case blackBishop:
-            moveBishop(msg, startCol, startRow, endCol, endRow);
+            moveBishop(msg, startCol, startRow, endCol, endRow, false);
             break;
         case whiteQueen:
+            moveQueen(msg, startCol, startRow, endCol, endRow, true);
+            break;
         case blackQueen:
-            moveQueen(msg, startCol, startRow, endCol, endRow);
+            moveQueen(msg, startCol, startRow, endCol, endRow, false);
             break;
         case whiteKing:
+            moveKing(msg, startCol, startRow, endCol, endRow, true);
+            break;
         case blackKing:
-            moveKing(msg, startCol, startRow, endCol, endRow);
+            moveKing(msg, startCol, startRow, endCol, endRow, false);
     }
 }
 
@@ -185,8 +192,8 @@ function movePiece(msg, startCol, startRow, endCol, endRow) {
     displayBoard(msg);
 }
 
-function movePawn(msg, startCol, startRow, endCol, endRow) {
-    if(isValidPawnMove(startCol, startRow, endCol, endRow)) {
+function movePawn(msg, startCol, startRow, endCol, endRow, isWhite) {
+    if(isValidPawnMove(startCol, startRow, endCol, endRow, isWhite)) {
         movePiece(msg, startCol, startRow, endCol, endRow);
     }
     else {
@@ -194,32 +201,62 @@ function movePawn(msg, startCol, startRow, endCol, endRow) {
     }
 }
 
-function isValidPawnMove(startCol, startRow, endCol, endRow) {
-    //Normal straight movement
-    if(startCol == endCol && endRow == startRow-1 && isBlank(board[endRow][endCol])) {
+function isValidPawnMove(startCol, startRow, endCol, endRow, isWhite) {
+    //Capture
+    if(isValidPawnCaptureMove(startCol, startRow, endCol, endRow, isWhite)) {
         return true;
     }
-    //Starting straight movement
-    else if(startRow == 6 && startCol == endCol && endRow == 4 && isBlank(board[endRow][endCol]))
-    {
-        return true;
+    else if(isWhite) {
+        //Normal straight movement
+        if(startCol == endCol && endRow == startRow-1 && isBlank(board[endRow][endCol])) {
+            return true;
+        }
+        //Starting straight movement
+        else if(startRow == 6 && startCol == endCol && endRow == 4 && isBlank(board[endRow][endCol]))
+        {
+            return true;
+        }
     }
-    //Diagonal right capture
-    else if(endRow == startRow-1 && endCol == startCol+1 && isBlackCapturablePiece(board[endRow][endCol])) {
-        return true;
-    }
-    //Diagonal left capture
-    else if(endRow == startRow-1 && endCol == startCol-1 && isBlackCapturablePiece(board[endRow][endCol])) {
-        return true;
-    }
-    //TODO: Add en passant capability
     else {
-        return false;
+        //Normal straight movement
+        if(startCol == endCol && endRow == startRow+1 && isBlank(board[endRow][endCol])) {
+            return true;
+        }
+        //Starting straight movement
+        else if(startRow == 1 && startCol == endCol && endRow == 3 && isBlank(board[endRow][endCol]))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+//TODO: Add en passant capability
+function isValidPawnCaptureMove(startCol, startRow, endCol, endRow, isWhite) {
+    if(isWhite) {
+        //Diagonal right capture
+        if(endRow == startRow-1 && endCol == startCol+1 && isCapturablePiece(board[endRow][endCol], isWhite)) {
+            return true;
+        }
+        //Diagonal left capture
+        else if(endRow == startRow-1 && endCol == startCol-1 && isCapturablePiece(board[endRow][endCol], isWhite)) {
+            return true;
+        }
+    }
+    else {
+        //Diagonal right capture
+        if(endRow == startRow+1 && endCol == startCol+1 && isCapturablePiece(board[endRow][endCol], isWhite)) {
+            return true;
+        }
+        //Diagonal left capture
+        else if(endRow == startRow+1 && endCol == startCol-1 && isCapturablePiece(board[endRow][endCol], isWhite)) {
+            return true;
+        }
     }
 }
 
-function moveRook(msg, startCol, startRow, endCol, endRow) {
-    if(isValidRookMove(startCol, startRow, endCol, endRow)) {
+function moveRook(msg, startCol, startRow, endCol, endRow, isWhite) {
+    if(isValidRookMove(startCol, startRow, endCol, endRow, isWhite)) {
         movePiece(msg, startCol, startRow, endCol, endRow);
     }
     else {
@@ -227,8 +264,8 @@ function moveRook(msg, startCol, startRow, endCol, endRow) {
     }
 }
 
-function isValidRookMove(startCol, startRow, endCol, endRow) {
-    if(!isBlank(board[endRow][endCol]) && !isBlackCapturablePiece(board[endRow][endCol])) {
+function isValidRookMove(startCol, startRow, endCol, endRow, isWhite) {
+    if(!isBlank(board[endRow][endCol]) && !isCapturablePiece(board[endRow][endCol], isWhite)) {
         return false;
     }
     //Moving up or down
@@ -274,8 +311,8 @@ function isColumnFree(row, startCol, endCol) {
     return true;
 }
 
-function moveKnight(msg, startCol, startRow, endCol, endRow) {
-    if(isValidKnightMove(startCol, startRow, endCol, endRow)) {
+function moveKnight(msg, startCol, startRow, endCol, endRow, isWhite) {
+    if(isValidKnightMove(startCol, startRow, endCol, endRow, isWhite)) {
         movePiece(msg, startCol, startRow, endCol, endRow);
     }
     else {
@@ -283,8 +320,8 @@ function moveKnight(msg, startCol, startRow, endCol, endRow) {
     }
 }
 
-function isValidKnightMove(startCol, startRow, endCol, endRow) {
-    if(!isBlank(board[endRow][endCol]) && !isBlackCapturablePiece(board[endRow][endCol])) {
+function isValidKnightMove(startCol, startRow, endCol, endRow, isWhite) {
+    if(!isBlank(board[endRow][endCol]) && !isCapturablePiece(board[endRow][endCol], isWhite)) {
         return false;
     }
     //Up 1 and right 2
@@ -324,8 +361,8 @@ function isValidKnightMove(startCol, startRow, endCol, endRow) {
     }
 }
 
-function moveBishop(msg, startCol, startRow, endCol, endRow) {
-    if(isValidBishopMove(startCol, startRow, endCol, endRow)) {
+function moveBishop(msg, startCol, startRow, endCol, endRow, isWhite) {
+    if(isValidBishopMove(startCol, startRow, endCol, endRow, isWhite)) {
         movePiece(msg, startCol, startRow, endCol, endRow);
     }
     else {
@@ -333,8 +370,8 @@ function moveBishop(msg, startCol, startRow, endCol, endRow) {
     }
 }
 
-function isValidBishopMove(startCol, startRow, endCol, endRow) {
-    if(!isBlank(board[endRow][endCol]) && !isBlackCapturablePiece(board[endRow][endCol])) {
+function isValidBishopMove(startCol, startRow, endCol, endRow, isWhite) {
+    if(!isBlank(board[endRow][endCol]) && !isCapturablePiece(board[endRow][endCol], isWhite)) {
         return false;
     }
     //To move diagonally, it must be moving the same num of rows as columns
@@ -373,8 +410,8 @@ function isDiagonalFree(startCol, startRow, endCol, endRow) {
     return true;
 }
 
-function moveQueen(msg, startCol, startRow, endCol, endRow) {
-    if(isValidQueenMove(startCol, startRow, endCol, endRow)) {
+function moveQueen(msg, startCol, startRow, endCol, endRow, isWhite) {
+    if(isValidQueenMove(startCol, startRow, endCol, endRow, isWhite)) {
         movePiece(msg, startCol, startRow, endCol, endRow);
     }
     else {
@@ -382,20 +419,91 @@ function moveQueen(msg, startCol, startRow, endCol, endRow) {
     }
 }
 
-function isValidQueenMove(startCol, startRow, endCol, endRow) {
-    return isValidBishopMove(startCol, startRow, endCol, endRow) || isValidRookMove(startCol, startRow, endCol, endRow);
+function isValidQueenMove(startCol, startRow, endCol, endRow, isWhite) {
+    return isValidBishopMove(startCol, startRow, endCol, endRow, isWhite) || isValidRookMove(startCol, startRow, endCol, endRow, isWhite);
 }
 
-function moveKing(msg, startCol, startRow, endCol, endRow) {
-    console.log("King");
+function moveKing(msg, startCol, startRow, endCol, endRow, isWhite) {
+    if(isValidKingMove(startCol, startRow, endCol, endRow, isWhite)) {
+        var temp = board[endRow][endCol];
+        board[endRow][endCol] = board[startRow][startCol];
+        if(!isChecked(endRow, endCol, isWhite)) {
+            movePiece(msg, startCol, startRow, endCol, endRow);
+        }
+        else {
+            board[endRow][endCol] = temp;
+            msg.reply("Can't move to a space that is being threatened!");
+        }
+    }
+    else {
+        msg.reply("Invalid king move!");
+    }
+}
+
+function isValidKingMove(startCol, startRow, endCol, endRow, isWhite) {
+    if(!isBlank(board[endRow][endCol]) && !isCapturablePiece(board[endRow][endCol], isWhite)) {
+        return false;
+    }
+    else if(Math.abs(endCol-startCol) <= 1 && Math.abs(endRow-startRow) <= 1) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 function isBlank(space) {
     return space == " ";
 }
 
+function isCapturablePiece(space, isWhite) {
+    if(isWhite)
+        return isBlackCapturablePiece(space);
+    return isWhiteCapturablePiece(space);
+}
+
 function isBlackCapturablePiece(space) {
-    return (space == blackPawn || space == blackRook || space == blackKnight || space == blackBishop || space == blackQueen);
+    return (space == blackPawn || space == blackRook || space == blackKnight || space == blackBishop || space == blackQueen || space == blackKing);
+}
+
+function isWhiteCapturablePiece(space) {
+    return (space == whitePawn || space == whiteRook || space == whiteKnight || space == whiteBishop || space == whiteQueen || space == whiteKing);
+}
+
+function isChecked(row, column, isWhite) {
+    //TODO: this has issues if the king is capturing a piece, since that's not a valid move for the other pieces, but they are threatening that piece
+    for(var i = 0; i < 8; i++) {
+        for(var j = 0; j < 8; j++) {
+            switch(board[i][j]) {
+                case blackPawn:
+                    if(isValidPawnCaptureMove(j, i, column, row, !isWhite))
+                        return true;
+                    break;
+                case blackRook:
+                    if(isValidRookMove(j, i, column, row, !isWhite))
+                        return true;
+                    break;
+                case blackKnight:
+                    if(isValidRookMove(j, i, column, row, !isWhite))
+                        return true;
+                    break;
+                case blackBishop:
+                    if(isValidRookMove(j, i, column, row, !isWhite))
+                        return true;
+                    break;
+                case blackQueen:
+                    if(isValidQueenMove(j, i, column, row, !isWhite))
+                        return true;
+                    break;
+                case blackKing:
+                    if(isValidKingMove(j, i, column, row, !isWhite))
+                        return true;
+                    break;
+                default:
+                    continue;
+            }
+        }
+    }
 }
 
 function getColumnNum(colChar) {
