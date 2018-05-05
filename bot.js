@@ -178,11 +178,13 @@ function move(msg, message) {
     }
 }
 
-function changePlayer() {
+function changePlayer(msg) {
     if(nextPlayer == player1) {
+        testCheckmate(msg, false);
         nextPlayer = player2;
     }
     else {
+        testCheckmate(msg, true);
         nextPlayer = player1;
     }
 }
@@ -202,27 +204,27 @@ function moveWhite(msg, startCol, startRow, endCol, endRow) {
             break;
         case whitePawn:
             movePawn(msg, startCol, startRow, endCol, endRow, true);
-            changePlayer();
+            changePlayer(msg);
             break;
         case whiteRook:
             moveRook(msg, startCol, startRow, endCol, endRow, true);
-            changePlayer();
+            changePlayer(msg);
             break;
         case whiteKnight:
             moveKnight(msg, startCol, startRow, endCol, endRow, true);
-            changePlayer();
+            changePlayer(msg);
             break;
         case whiteBishop:
             moveBishop(msg, startCol, startRow, endCol, endRow, true);
-            changePlayer();
+            changePlayer(msg);
             break;
         case whiteQueen:
             moveQueen(msg, startCol, startRow, endCol, endRow, true);
-            changePlayer();
+            changePlayer(msg);
             break;
         case whiteKing:
             moveKing(msg, startCol, startRow, endCol, endRow, true);
-            changePlayer();
+            changePlayer(msg);
             break;
     }
 }
@@ -242,27 +244,27 @@ function moveBlack(msg, startCol, startRow, endCol, endRow) {
             break;
         case blackPawn:
             movePawn(msg, startCol, startRow, endCol, endRow, false);
-            changePlayer();
+            changePlayer(msg);
             break;
         case blackRook:
             moveRook(msg, startCol, startRow, endCol, endRow, false);
-            changePlayer();
+            changePlayer(msg);
             break;
         case blackKnight:
             moveKnight(msg, startCol, startRow, endCol, endRow, false);
-            changePlayer();
+            changePlayer(msg);
             break;
         case blackBishop:
             moveBishop(msg, startCol, startRow, endCol, endRow, false);
-            changePlayer();
+            changePlayer(msg);
             break;
         case blackQueen:
             moveQueen(msg, startCol, startRow, endCol, endRow, false);
-            changePlayer();
+            changePlayer(msg);
             break;
         case blackKing:
             moveKing(msg, startCol, startRow, endCol, endRow, false);
-            changePlayer();
+            changePlayer(msg);
     }
 }
 
@@ -550,39 +552,108 @@ function isWhiteCapturablePiece(space) {
     return (space == whitePawn || space == whiteRook || space == whiteKnight || space == whiteBishop || space == whiteQueen || space == whiteKing);
 }
 
-function isChecked(row, column, isWhite) {
+function isChecked(row, column, onWhite) {
     for(var i = 0; i < 8; i++) {
         for(var j = 0; j < 8; j++) {
-            switch(board[i][j]) {
-                case blackPawn:
-                    if(isValidPawnCaptureMove(j, i, column, row, !isWhite))
-                        return true;
-                    break;
-                case blackRook:
-                    if(isValidRookMove(j, i, column, row, !isWhite))
-                        return true;
-                    break;
-                case blackKnight:
-                    if(isValidRookMove(j, i, column, row, !isWhite))
-                        return true;
-                    break;
-                case blackBishop:
-                    if(isValidRookMove(j, i, column, row, !isWhite))
-                        return true;
-                    break;
-                case blackQueen:
-                    if(isValidQueenMove(j, i, column, row, !isWhite))
-                        return true;
-                    break;
-                case blackKing:
-                    if(isValidKingMove(j, i, column, row, !isWhite))
-                        return true;
-                    break;
-                default:
-                    continue;
+            if(onWhite) {
+                switch(board[i][j]) {
+                    case blackPawn:
+                        if(isValidPawnCaptureMove(j, i, column, row, !onWhite))
+                            return true;
+                        break;
+                    case blackRook:
+                        if(isValidRookMove(j, i, column, row, !onWhite))
+                            return true;
+                        break;
+                    case blackKnight:
+                        if(isValidRookMove(j, i, column, row, !onWhite))
+                            return true;
+                        break;
+                    case blackBishop:
+                        if(isValidRookMove(j, i, column, row, !onWhite))
+                            return true;
+                        break;
+                    case blackQueen:
+                        if(isValidQueenMove(j, i, column, row, !onWhite))
+                            return true;
+                        break;
+                    case blackKing:
+                        if(isValidKingMove(j, i, column, row, !onWhite))
+                            return true;
+                        break;
+                    default:
+                        continue;
+                }
+            }
+            else {
+                switch(board[i][j]) {
+                    case whitePawn:
+                        if(isValidPawnCaptureMove(j, i, column, row, !onWhite))
+                            return true;
+                        break;
+                    case whiteRook:
+                        if(isValidRookMove(j, i, column, row, !onWhite))
+                            return true;
+                        break;
+                    case whiteKnight:
+                        if(isValidRookMove(j, i, column, row, !onWhite))
+                            return true;
+                        break;
+                    case whiteBishop:
+                        if(isValidRookMove(j, i, column, row, !onWhite))
+                            return true;
+                        break;
+                    case whiteQueen:
+                        if(isValidQueenMove(j, i, column, row, !onWhite))
+                            return true;
+                        break;
+                    case whiteKing:
+                        if(isValidKingMove(j, i, column, row, !onWhite))
+                            return true;
+                        break;
+                    default:
+                        continue;
+                }
             }
         }
     }
+}
+
+//TODO: Improve this. Currently will not detect the case where you could capture the piece threatening the king
+function testCheckmate(msg, onWhite) {
+    kingCol = -1;
+    kingRow = -1;
+    
+    for(var i = 0; i < 8; i++) {
+        for(var j = 0; j < 8; j++) {
+            if((onWhite && board[i][j] == whiteKing) || (!onWhite && board[i][j] == blackKing)) {
+                kingRow = i;
+                kingCol = j;
+                break;
+            }
+        }
+    }
+    
+    if(isChecked(kingRow, kingCol, onWhite)) {
+        if(validSpace(kingRow-1, kingCol-1) && isChecked(kingRow-1, kingCol-1)
+            && validSpace(kingRow-1, kingCol) && isChecked(kingRow-1, kingCol)
+            && validSpace(kingRow-1, kingCol+1) && isChecked(kingRow-1, kingCol+1)
+            && validSpace(kingRow, kingCol-1) && isChecked(kingRow, kingCol-1)
+            && validSpace(kingRow, kingCol+1) && isChecked(kingRow, kingCol+1)
+            && validSpace(kingRow+1, kingCol-1) && isChecked(kingRow+1, kingCol-1)
+            && validSpace(kingRow+1, kingCol) && isChecked(kingRow+1, kingCol)
+            && validSpace(kingRow+1, kingCol+1) && isChecked(kingRow+1, kingCol+1)) {
+                msg.reply("Checkmate. You win!");
+                return;
+            }
+        msg.channel.send("Check!");
+    }
+}
+
+function validSpace(row, col) {
+    if(row >= 0 && row <= 7 && col >= 0 && col <= 7)
+        return true;
+    return false;
 }
 
 function getColumnNum(colChar) {
