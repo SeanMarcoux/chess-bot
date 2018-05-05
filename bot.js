@@ -20,8 +20,8 @@ var blackSpace = "\u2B1B";
 var whiteSpace = "\u2B1C";
 
 var player1;
-
-var useDMs = false;
+var player2;
+var nextPlayer;
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -62,9 +62,10 @@ function reactToCommands(msg, message)
     else if(message.startsWith("&help")) {
         help(msg);
     }
-    else if(message.startsWith("&newgame")) {
+    else if(message.startsWith("&newgame ")) {
         player1 = msg.author.id;
-        newGame(msg, msg.author.username);
+        player2 = null;
+        newGame(msg, message, msg.author.username);
     }
     else if(message.startsWith("&move ")) {
         move(msg, message);
@@ -77,12 +78,29 @@ function reactToCommands(msg, message)
 function help(msg) {
     msg.reply("The following commands are available:\n"
         + "*&help*: Displays this message\n"
-        + "*&newgame*: I'll start a game of connect 4 with you!\n"
+        + "*&newgame (username)*: I'll start a game of chess between you and the chosen player!\n"
         + "*&move (current space) (target space)*: Move a piece from the current space to the target space (ex: &move A1 B2)");
 }
 
-function newGame(msg, p1) {
-    msg.channel.send("New game started by " + p1 + "!");
+function newGame(msg, message, p1) {
+    var p2 = getStringAfterSpace(message);
+    var users = client.users.array();
+    for(var i = 0; i < users.length; i++)
+    {
+        if(users[i].username.toLowerCase() === p2)
+        {
+            player2 = users[i].id;
+            p2 = users[i].username;
+            break;
+        }
+    }
+    if(!player2) {
+        msg.reply(p2 + " is not a user in this channel! Double check your spelling");
+        return;
+    }
+    
+    nextPlayer = player1;
+    msg.channel.send("New game started between " + p1 + "and " + p2 + "!");
     resetBoard();
     displayBoard(msg);
 }
@@ -125,6 +143,14 @@ function displayBoard(msg) {
 }
 
 function move(msg, message) {
+    if(msg.author.id !== player1 && msg.author.id !== player2) {
+        msg.reply("You are not one of the active players!");
+        return;
+    }
+    if(msg.author.id !== nextPlayer) {
+        msg.reply("It is not your turn!");
+        return;
+    }
     var move = getStringAfterSpace(message);
     var startSpace = move.split(" ")[0];
     var endSpace = move.split(" ")[1];
@@ -144,45 +170,99 @@ function move(msg, message) {
         return;
     }
     
+    if(nextPlayer == player1) {
+        moveWhite(msg, startCol, startRow, endCol, endRow);
+    }
+    else {
+        moveBlack(msg, startCol, startRow, endCol, endRow);
+    }
+}
+
+function changePlayer() {
+    if(nextPlayer == player1) {
+        nextPlayer = player2;
+    }
+    else {
+        nextPlayer = player1;
+    }
+}
+
+function moveWhite(msg, startCol, startRow, endCol, endRow) {
     switch(board[startRow][startCol]) {
         case ' ':
             msg.reply("There is no piece at that space!");
             break;
+        case blackQueen:
+        case blackRook:
+        case blackKnight:
+        case blackBishop:
+        case blackKing:
+        case blackPawn:
+            msg.reply("You can't move a black piece!");
+            break;
         case whitePawn:
             movePawn(msg, startCol, startRow, endCol, endRow, true);
-            break;
-        case blackPawn:
-            movePawn(msg, startCol, startRow, endCol, endRow, false);
+            changePlayer();
             break;
         case whiteRook:
             moveRook(msg, startCol, startRow, endCol, endRow, true);
-            break;
-        case blackRook:
-            moveRook(msg, startCol, startRow, endCol, endRow, false);
+            changePlayer();
             break;
         case whiteKnight:
             moveKnight(msg, startCol, startRow, endCol, endRow, true);
-            break;
-        case blackKnight:
-            moveKnight(msg, startCol, startRow, endCol, endRow, false);
+            changePlayer();
             break;
         case whiteBishop:
             moveBishop(msg, startCol, startRow, endCol, endRow, true);
-            break;
-        case blackBishop:
-            moveBishop(msg, startCol, startRow, endCol, endRow, false);
+            changePlayer();
             break;
         case whiteQueen:
             moveQueen(msg, startCol, startRow, endCol, endRow, true);
-            break;
-        case blackQueen:
-            moveQueen(msg, startCol, startRow, endCol, endRow, false);
+            changePlayer();
             break;
         case whiteKing:
             moveKing(msg, startCol, startRow, endCol, endRow, true);
+            changePlayer();
+            break;
+    }
+}
+
+function moveBlack(msg, startCol, startRow, endCol, endRow) {
+    switch(board[startRow][startCol]) {
+        case ' ':
+            msg.reply("There is no piece at that space!");
+            break;
+        case whiteRook:
+        case whiteKnight:
+        case whiteBishop:
+        case whiteQueen:
+        case whiteKing:
+        case whitePawn:
+            msg.reply("You can't move a white piece!");
+            break;
+        case blackPawn:
+            movePawn(msg, startCol, startRow, endCol, endRow, false);
+            changePlayer();
+            break;
+        case blackRook:
+            moveRook(msg, startCol, startRow, endCol, endRow, false);
+            changePlayer();
+            break;
+        case blackKnight:
+            moveKnight(msg, startCol, startRow, endCol, endRow, false);
+            changePlayer();
+            break;
+        case blackBishop:
+            moveBishop(msg, startCol, startRow, endCol, endRow, false);
+            changePlayer();
+            break;
+        case blackQueen:
+            moveQueen(msg, startCol, startRow, endCol, endRow, false);
+            changePlayer();
             break;
         case blackKing:
             moveKing(msg, startCol, startRow, endCol, endRow, false);
+            changePlayer();
     }
 }
 
@@ -471,7 +551,6 @@ function isWhiteCapturablePiece(space) {
 }
 
 function isChecked(row, column, isWhite) {
-    //TODO: this has issues if the king is capturing a piece, since that's not a valid move for the other pieces, but they are threatening that piece
     for(var i = 0; i < 8; i++) {
         for(var j = 0; j < 8; j++) {
             switch(board[i][j]) {
